@@ -1,4 +1,4 @@
-Server ID: Unknown
+Server ID: 7a0fe343
 Renew status: Failed
-Last renewal time: 2024-12-25 02:01:50
-Error: An error occurred: name 'server_id' is not defined
+Last renewal time: 2024-12-25 02:35:55
+Error: Time not extended
