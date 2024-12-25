@@ -344,7 +344,7 @@ def main():
         driver.get("https://tickhosting.com")
         time.sleep(5)
         
-        # try login to dashboard
+        # Try login to dashboard
         if not login_to_dashboard(driver):
             raise Exception("Unable to login to dashboard")
         
@@ -425,51 +425,41 @@ def main():
         # Additional logging to ensure URL is captured
         print(f"Confirmed server page URL: {driver.current_url}")
 
-        # Print full page source
-        print("\nFull Page Source (first 10000 characters):")
-        print(driver.page_source[:10000])
+        # Define selectors for the "Start" button
+        start_selectors = [
+            ("css", "#power-start"),
+            ("xpath", "/html/body/div[5]/div[2]/div[2]/div[3]/section/div[1]/div[1]/div[3]/div/button[1]"),
+            ("css", "button.style-module_4LBM1DKx.style-module_3kBDV_wo.flex-1#power-start")
+        ]
         
-        # print button elements
-        all_buttons = driver.find_elements(By.TAG_NAME, "button")
-        print(f"\nTotal buttons found: {len(all_buttons)}")
-        for idx, button in enumerate(all_buttons, 1):
+        # Look for and click "Start" button
+        print("\nLooking for start button...")
+        start_button = None
+        for selector_type, selector in start_selectors:
             try:
-                print(f"Button {idx}:")
-                print(f"  Text: '{button.text}'")
-                print(f"  Visible: {button.is_displayed()}")
-                print(f"  Enabled: {button.is_enabled()}")
-                print(f"  Class: '{button.get_attribute('class')}'")
-                print(f"  Outer HTML: '{button.get_attribute('outerHTML')}'")
-                print("---")
+                print(f"Trying {selector_type} selector: {selector}")
+                if selector_type == "xpath":
+                    elements = driver.find_elements(By.XPATH, selector)
+                else:
+                    elements = driver.find_elements(By.CSS_SELECTOR, selector)
+                
+                if elements:
+                    print(f"Found {len(elements)} elements with {selector_type} selector: {selector}")
+                    for element in elements:
+                        print(f"Element text: {element.text}")
+                        print(f"Element HTML: {element.get_attribute('outerHTML')}")
+                    start_button = elements[0]
+                    break
             except Exception as e:
-                print(f"Error processing button {idx}: {e}")
-        
-        # print span elements
-        all_spans = driver.find_elements(By.TAG_NAME, "span")
-        print(f"\nTotal spans found: {len(all_spans)}")
-        for idx, span in enumerate(all_spans, 1):
-            try:
-                print(f"Span {idx}:")
-                print(f"  Text: '{span.text}'")
-                print(f"  Class: '{span.get_attribute('class')}'")
-                print(f"  Outer HTML: '{span.get_attribute('outerHTML')}'")
-                print("---")
-            except Exception as e:
-                print(f"Error processing span {idx}: {e}")
-        
-        # get server ID
-        try:
-            current_url = driver.current_url
-            print(f"\nCurrent URL: {current_url}")
-            
-            server_id_match = re.search(r'/server/([a-f0-9]+)', current_url)
-            server_id = server_id_match.group(1) if server_id_match else 'Unknown'
-            
-            print(f"Extracted Server ID: {server_id}")
-        except Exception as e:
-            print(f"Error extracting server ID: {e}")
-            server_id = 'Unknown'
+                print(f"Failed with {selector_type} selector {selector}: {str(e)}")
+                continue
 
+        if not start_button:
+            raise Exception("Could not find start button")
+
+        print("Clicking start button...")
+        driver.execute_script("arguments[0].click();", start_button)
+        
         renew_selectors = [
             ("xpath", "//span[contains(@class, 'Button___StyledSpan-sc-1qu1gou-2')]/parent::button"),
             ("css", "button.Button__ButtonStyle-sc-1qu1gou-0.beoWBB.RenewBox___StyledButton-sc-1inh2rq-7.hMqrbU"),
@@ -478,7 +468,7 @@ def main():
             ("xpath", "//button[.//span[contains(text(), 'ADD 96 HOUR')]]"),
             ("xpath", "//button[@color='primary' and contains(@class, 'Button__ButtonStyle')]")
         ]
-
+        
         print("\nWaiting for any button to become visible...")
         try:
             WebDriverWait(driver, 10).until(
