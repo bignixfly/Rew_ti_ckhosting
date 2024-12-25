@@ -425,14 +425,19 @@ def main():
         # Additional logging to ensure URL is captured
         print(f"Confirmed server page URL: {driver.current_url}")
 
-        # Define selectors for the "Start" button
+        # Ensure the start button is loaded
+        print("\nWaiting for start button to be visible...")
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#power-start"))
+        )
+
+        # 查找并点击“Start”按钮
         start_selectors = [
             ("css", "#power-start"),
             ("xpath", "/html/body/div[5]/div[2]/div[2]/div[3]/section/div[1]/div[1]/div[3]/div/button[1]"),
             ("css", "button.style-module_4LBM1DKx.style-module_3kBDV_wo.flex-1#power-start")
         ]
         
-        # Look for and click "Start" button
         print("\nLooking for start button...")
         start_button = None
         for selector_type, selector in start_selectors:
@@ -445,9 +450,6 @@ def main():
                 
                 if elements:
                     print(f"Found {len(elements)} elements with {selector_type} selector: {selector}")
-                    for element in elements:
-                        print(f"Element text: {element.text}")
-                        print(f"Element HTML: {element.get_attribute('outerHTML')}")
                     start_button = elements[0]
                     break
             except Exception as e:
@@ -459,7 +461,8 @@ def main():
 
         print("Clicking start button...")
         driver.execute_script("arguments[0].click();", start_button)
-        
+
+        # 原有的续订按钮逻辑
         renew_selectors = [
             ("xpath", "//span[contains(@class, 'Button___StyledSpan-sc-1qu1gou-2')]/parent::button"),
             ("css", "button.Button__ButtonStyle-sc-1qu1gou-0.beoWBB.RenewBox___StyledButton-sc-1inh2rq-7.hMqrbU"),
@@ -468,7 +471,7 @@ def main():
             ("xpath", "//button[.//span[contains(text(), 'ADD 96 HOUR')]]"),
             ("xpath", "//button[@color='primary' and contains(@class, 'Button__ButtonStyle')]")
         ]
-        
+
         print("\nWaiting for any button to become visible...")
         try:
             WebDriverWait(driver, 10).until(
@@ -489,9 +492,6 @@ def main():
                 
                 if elements:
                     print(f"Found {len(elements)} elements with {selector_type}: {selector}")
-                    for element in elements:
-                        print(f"Element text: {element.text}")
-                        print(f"Element HTML: {element.get_attribute('outerHTML')}")
                     renew_button = elements[0]
                     break
             except Exception as e:
